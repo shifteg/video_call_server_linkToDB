@@ -1,0 +1,72 @@
+<script src='/socket.io/socket.io.js'></script>
+<script defer src="https://unpkg.com/peerjs@1.2.0/dist/peerjs.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+<h1>
+    Hello from hrml
+</h1>
+
+
+<div id ="message-container"></div>
+
+<div id="video-grid"></div>
+
+<div class="clearfix"></div>
+
+
+<form id="message-form">
+    <input type="text" name="message" id="message-input" placeholder=" Type your message">
+    <button type="submit"> Send</button>
+</form>
+
+
+<script>
+    const socket=window.io()
+    const msgForm=document.querySelector('#message-form')
+    const msgInput=document.querySelector('#message-input')
+    const msgContainer=document.querySelector('#message-container')
+
+    msgForm.onsubmit = e =>{
+      e.preventDefault();
+      const msg=msgInput.value;
+
+          socket.emit('send-message',{msg })
+          msgInput.value=''
+
+}
+
+
+    // socket.emit('send-message',{ message:'Hello' })
+
+    socket.on('send-message', ({msg }) => {
+           
+            console.log(`data From html `,{msg })
+            // alert(msg)
+            msgContainer.innerHTML+=`<p>${msg} </p>`
+        })
+
+
+
+</script>
+
+
+
+
+<style>
+    #video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 300px);
+      grid-auto-rows: 300px;
+      margin: 6px;
+      padding: 10px;
+     
+    }
+    
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      margin-right: 12px;
+      padding: 6px;
+    }
+  </style>
