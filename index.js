@@ -142,5 +142,5 @@ io.on('connection', socket => {
 
 //listen to port 3000 on pc
 // server.listen(3002)
-server.listen(3004)
+server.listen(process.env.PORT || 3004)
 
