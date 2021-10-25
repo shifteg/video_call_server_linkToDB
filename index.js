@@ -81,9 +81,11 @@ io.on('connection', socket => {
         console.log("send-message message friendId : " + message.friendId)
         console.log("send-message message meId : " + message.meId)
         console.log("send-message message : " + message.message)
+        console.log("send-message callerImage : " + message.callerImage)
+        console.log("send-message username : " + message.callerName)
         console.log(message)
 
-        io.to(val).emit('send-message', { "message": message.meId, "username": message.callername })
+        io.to(val).emit('send-message', { "message": message.meId, "username": message.callerName,"userimage": message.callerImage })
 
     })
 
@@ -138,6 +140,17 @@ io.on('connection', socket => {
 
     })
 
+    socket.on('closecam-call', function (closecam) {
+
+        console.log(closecam)
+        let val = dict[closecam.callID];
+        console.log("end-call friend ID : " + val)
+        console.log("end-call call messagefromcallerId : " + closecam.callID)
+        console.log("end-call call states : " + closecam.states)
+        // console.log(  "call"+ call.message)
+        io.to(val).emit('closecam-call', { "states": closecam.states, "answerid": closecam.callID })
+
+    })
 })
 
 //listen to port 3000 on pc
