@@ -151,6 +151,19 @@ io.on('connection', socket => {
         io.to(val).emit('closecam-call', { "states": closecam.states, "answerid": closecam.callID })
 
     })
+
+    socket.on('busy-call', function (busy) {
+
+        console.log(busy)
+        let val = dict[busy.callID];
+        console.log("busy-call friend ID : " + val)
+        console.log("busy-call call messagefromcallerId : " + busy.callID)
+        console.log("busy-call call states : " + busy.states)
+        // console.log(  "call"+ call.message)
+        io.to(val).emit('busy-call', { "states": busy.states, "answerid": busy.callID })
+
+    })
+
 })
 
 //listen to port 3000 on pc
