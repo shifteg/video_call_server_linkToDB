@@ -79,10 +79,10 @@ console.dir("server id ip for test : " + ip.address());
 // console.dir("server id ip for test : " + ip.env);
 // app.listen(3000)
 //Socket.io Connection------------------
-io.engine.generateId = function (req) {
-    // generate a new custom id here
-    return 1
-}
+// io.engine.generateId = function (req) {
+//     // generate a new custom id here
+//     return 1
+// }
 
 const statusMonitor = require('express-status-monitor');
 app.use(statusMonitor());
