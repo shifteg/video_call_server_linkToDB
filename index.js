@@ -95,14 +95,14 @@ io.on('connection', async socket => {
         var useName = socket.handshake.query.name;
         var image = socket.handshake.query.image;
         // console.log("Newsocketconnection socket.handshake.query : " + socket.handshake.query)
-        console.log("connection id : " + useId)
-        console.log("connection name : " + useName)
-        console.log("connection image : " + image)
-        console.log("connection ocket.id : " + socket.id)
+        // console.log("connection id : " + useId)
+        // console.log("connection name : " + useName)
+        // console.log("connection image : " + image)
+        // console.log("connection ocket.id : " + socket.id)
         // dict[useId] = socket.id;
         // const update= await
         updateUserData(useId, useName, image, socket.id, 1).then(result => {
-            console.log("connection-callDB 1 call result : " + result)
+            // console.log("connection-callDB 1 call result : " + result)
 
         })
     }
@@ -516,42 +516,42 @@ async function updateUserData(useId, useName, image, socket_id, connected) {
 
             try {
 
-                console.log("getupdateUserDataUserData if  : " + useId)
-                // selectUser(useId)
-                // var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
-                console.log("updateUserData7777777777777 if  : ")
+                // console.log("getupdateUserDataUserData if  : " + useId)
+                // // selectUser(useId)
+                // // var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
+                // console.log("updateUserData7777777777777 if  : ")
 
                 let checkUserresult = await selectUser(useId)
-                console.log("updateUserData 1 sqlCheckUser+++++++++");
-                // // var callerId = checkUserresult.rows[0].user_mobile
+                // console.log("updateUserData 1 sqlCheckUser+++++++++");
+                // // // var callerId = checkUserresult.rows[0].user_mobile
 
-                console.log(checkUserresult.rows.length);
-                console.log(checkUserresult.rows);
-                // console.log(checkUserresult.rows[0].socket_id);
+                // console.log(checkUserresult.rows.length);
+                // console.log(checkUserresult.rows);
+                // // console.log(checkUserresult.rows[0].socket_id);
 
 
                 if (checkUserresult.rows.length != 0) {
                     try {
-                        console.log("checkUserresult if ");
+                        // console.log("checkUserresult if ");
 
                         await updatetUser(useId, useName, image, socket_id, connected)
                         // var sqlUpdateUser = `UPDATE connectios_users SET socket_id = ? WHERE user_mobile = ?`;
                         // let result = await businesspool(req, res, sqlUpdateUser, [socket_id, useId])
 
-                        console.log("sqlUpdateUser 1 result");
+                        // console.log("sqlUpdateUser 1 result");
                         // console.log(result.rows[0]);
                     }
                     catch (error) {
-                        console.log("checkUserresult if ");
-                        console.log("error 2");
+                        // console.log("checkUserresult if ");
+                        // console.log("error 2");
 
                     }
                 }
 
                 else {
-                    console.log("checkUserresult else ");
+                    // console.log("checkUserresult else ");
                     await insertUser(useId, useName, image, socket_id, connected)
-                    console.log("user inserted ");
+                    // console.log("user inserted ");
                 }
             }
             catch (error) {
@@ -584,16 +584,16 @@ async function selectUser(useId) {
     console.log(useId);
  
     try {
-        console.log("selectUser");
-        console.log("businesspooloooooooooooooo");
+        // console.log("selectUser");
+        // console.log("businesspooloooooooooooooo");
         var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
         let checkUserresult = await businesspool(req, res, sqlCheckUser, [useId])
-        console.log("selectUser  ----");
+        // console.log("selectUser  ----");
 
         if (checkUserresult.rows.length != 0) {
-            console.log(checkUserresult.rows[0].user_mobile);
-            console.log(checkUserresult.rows[0].user_name);
-            console.log(checkUserresult.rows[0].socket_id);
+            // console.log(checkUserresult.rows[0].user_mobile);
+            // console.log(checkUserresult.rows[0].user_name);
+            // console.log(checkUserresult.rows[0].socket_id);
         } else {
             console.log("no user");
         }
@@ -690,8 +690,8 @@ async function updatetUserConnected(useId, connected) {
         var sqlUpdateUser = `UPDATE connectios_users SET  connected=?  WHERE user_mobile = ?`;
         let checkUserresult = await businesspool(req, res, sqlUpdateUser, [connected, useId])
 
-        console.log("sqlUpdateUser 1 result");
-        console.log(checkUserresult.rows[0]);
+        // console.log("sqlUpdateUser 1 result");
+        // console.log(checkUserresult.rows[0]);
 
     }
     catch (error) {
