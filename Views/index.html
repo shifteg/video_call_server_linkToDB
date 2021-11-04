@@ -17,11 +17,39 @@
 <form id="message-form">
     <input type="text" name="message" id="message-input" placeholder=" Type your message">
     <button type="submit"> Send</button>
+
+    <button onclick="myFunction()">Click me</button>
+
 </form>
 
 
 <script>
-    const socket=window.io()
+ let socket;
+//  let url = "https://chatsocketserver20211.herokuapp.com/";
+ let url = "http://172.16.1.160:3004";
+// 
+ var i="test"
+ socket=window.io( url+"?id='55'&name='77'&image='114'");
+
+ function  myFunction(){
+   var url = "http://172.16.1.160:3004"
+
+     for(var i=999;  i<10000;   i++){
+     console.log(`iiiiiiiiii`,{i })
+
+     setTimeout(function () {
+      socket=window.io( "?id="+i+"&name="+i+"&image="+i+"")
+  }, 3000);
+
+
+    
+   
+      }
+
+}
+        
+
+
     const msgForm=document.querySelector('#message-form')
     const msgInput=document.querySelector('#message-input')
     const msgContainer=document.querySelector('#message-container')
@@ -38,12 +66,12 @@
 
     // socket.emit('send-message',{ message:'Hello' })
 
-    socket.on('send-message', ({msg }) => {
+    // socket.on('send-message', ({msg }) => {
            
-            console.log(`data From html `,{msg })
-            // alert(msg)
-            msgContainer.innerHTML+=`<p>${msg} </p>`
-        })
+    //         console.log(`data From html `,{msg })
+    //         // alert(msg)
+    //         msgContainer.innerHTML+=`<p>${msg} </p>`
+    //     })
 
 
 

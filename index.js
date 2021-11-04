@@ -11,7 +11,8 @@ const businesspool = require('./businessPool')
 // create server
 
 const server = http.createServer(app);
-const io = require('socket.io')(server);
+// const io = require('socket.io')(server);
+const io = require('socket.io')(server, { origins: '*:*'});
 //show static files in 'public' directory
 
 const fs = require('fs');
@@ -85,7 +86,7 @@ io.engine.generateId = function (req) {
 
 const statusMonitor = require('express-status-monitor');
 app.use(statusMonitor());
-io.on('connection', socket => {
+io.on('connection', async socket => {
 
     try {
 
