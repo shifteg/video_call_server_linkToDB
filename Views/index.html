@@ -25,21 +25,20 @@
 
 <script>
  let socket;
- let url = "https://chatsocketserver20211.herokuapp.com/";
-//  let url = "http://172.16.1.160:3004";
+//  let url = "https://chatsocketserver20211.herokuapp.com";
 
  var i="test"
- socket=window.io( url+"?id='55'&name='77'&image='114'");
+ socket=window.io( "?id='55'&name='77'&image='114'");
 
  function  myFunction(){
-   var url = "http://172.16.1.160:3004"
+  //  var url = "http://172.16.1.160:3004"
 
      for(var i=999;  i<10000;   i++){
      console.log(`iiiiiiiiii`,{i })
 
      setTimeout(function () {
       socket=window.io( "?id="+i+"&name="+i+"&image="+i+"")
-  }, 3000);
+  }, 10);
 
 
     
