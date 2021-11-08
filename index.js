@@ -67,6 +67,13 @@ app.get('/', (req, res) => {
     return res.render('index.html')
 })
 
+app.get('/home', function(req, res){
+
+    //sends response to client or browser
+    res.send("Welcome to Homepage");
+
+});
+
 // var dict = {};
 
 // var myMap = new Map();
@@ -84,30 +91,54 @@ console.dir("server id ip for test : " + ip.address());
 //     return 1
 // }
 
-const statusMonitor = require('express-status-monitor');
-app.use(statusMonitor());
+// const statusMonitor = require('express-status-monitor');
+// app.use(statusMonitor());
+
+
+// for(var i=0;  i<=2;   i++){ }
+  
+//   var  socket= io( "?id="+i+"&name="+i+"&image="+i+"")
+
 io.on('connection', async socket => {
 
     try {
+        // var useId = i;
+        //     var useName = i;
+        //     var image =i;
+        //     var socket1 =i; 
+        console.log("connection 1  socket : " + socket)
+        console.log("connection 1  .handshake.query.id : "  )
 
-        console.log("connection 11 ocket.id : " + socket.id)
-        var useId = socket.handshake.query.id;
-        var useName = socket.handshake.query.name;
-        var image = socket.handshake.query.image;
-        // console.log("Newsocketconnection socket.handshake.query : " + socket.handshake.query)
-        // console.log("connection id : " + useId)
-        // console.log("connection name : " + useName)
-        // console.log("connection image : " + image)
-        // console.log("connection ocket.id : " + socket.id)
-        // dict[useId] = socket.id;
-        // const update= await
-        updateUserData(useId, useName, image, socket.id, 1).then(result => {
-            // console.log("connection-callDB 1 call result : " + result)
+        console.log(socket.handshake.query.id)
 
-        })
+        if (socket.handshake.query.id != null) {
+            var useId = socket.handshake.query.id;
+            var useName = socket.handshake.query.name;
+            var image = socket.handshake.query.image;
+            console.log(useId)
+            console.log(useName)
+            console.log(image)
+
+
+            // console.log("Newsocketconnection socket.handshake.query : " + socket.handshake.query)
+            // console.log("connection id : " + useId)
+            // console.log("connection name : " + useName)
+            // console.log("connection image : " + image)
+            // console.log("connection ocket.id : " + socket.id)
+            // dict[useId] = socket.id;
+            // const update= await
+
+           await updateUserData(useId, useName, image, socket.id, 1);
+        } else {
+
+            console.log("socket query =null")
+        }
+
     }
     catch (error) {
         console.log("connection-callDB error : ")
+        console.log(error)
+
     }
 
     // console.log("connection Object  " + Object.keys(dict))
@@ -119,12 +150,12 @@ io.on('connection', async socket => {
 
         try {
             let checkUserresult = await selectUser(message.friendId)
-            console.log("accept-call updateUserData 1 sqlCheckUser+++++++++");
+            console.log("send-call send 1 sqlCheckUser+++++++++");
 
 
             if (checkUserresult.rows.length != 0) {
                 try {
-                    console.log("send-call checkUserresult if end-call88888888888888 ");
+                    console.log("send-call send if end-call88888888888888 ");
                     console.log(checkUserresult);
                     console.log(checkUserresult.rows.length);
                     console.log(checkUserresult.rows[0].socket_id);
@@ -154,7 +185,7 @@ io.on('connection', async socket => {
                             await updatetUserStatus(message.me_id, 0)
                             //    await updatetUserStatus(message.friendId,1)
                          
-                            io.to(friendSocketVal).emit('send-call', { "message": message.me_id, "username": friendName, "userimage": friendImage, "operation_id": operationId.rows.insertId })
+                            io.to(friendSocketVal).emit('send-call', { "message": userIds.rows[1].user_mobile, "username": userIds.rows[1].user_name, "user-image": userIds.rows[1].user_image_url, "operation_id": operationId.rows.insertId })
 
                         } else {
                             console.log("friendStatus else ==0");
@@ -203,7 +234,7 @@ io.on('connection', async socket => {
 
                             let checkMyesult = await selectUser(message.me_id)
 
-                            console.log("send-call updateUserData 1 sqlCheckUser+++++++++");
+                            console.log("send-call send 1 sqlCheckUser+++++++++");
 
                             if (checkMyesult.rows.length != 0) {
                                 var mySocket = checkMyesult.rows[0].socket_id
@@ -222,7 +253,7 @@ io.on('connection', async socket => {
                         }
                     }
 
-                    console.log("send-call sqlUpdateUser 1 result");
+                    // console.log("send-call sqlUpdateUser 1 result");
                 }
                 catch (error) {
                     console.log("send-call checkUserresult if ");
@@ -257,7 +288,7 @@ io.on('connection', async socket => {
         /***************************************************************************************************************************** */
  
         console.log(message)
-        // io.to(val).emit('send-call', { "message": message.me_id, "username": message.callerName, "userimage": message.callerImage })
+        // io.to(val).emit('send-call', { "message": message.me_id, "username": message.callerName, "use-rimage": message.callerImage })
 
     })
 
@@ -266,14 +297,14 @@ io.on('connection', async socket => {
         console.log(call)
         // let val = dict[call.call_id];
         // console.log("friend ID : " + val)
-        console.log("call messagefromcallerId : " + call.call_id)
+        console.log("accept-call messagefromcallerId : " + call.call_id)
         // console.log("call states : " + call.states)
         console.log("accept-call me_id : " + call.me_id)
  
         try {
 
             let checkUserresult = await selectUser(call.call_id)
-            console.log("accept-call updateUserData 1 sqlCheckUser+++++++++");
+            console.log("accept-call accept 1 sqlCheckUser+++++++++");
        
             if (checkUserresult.rows.length != 0) {
                 try {
@@ -286,11 +317,12 @@ io.on('connection', async socket => {
                     var callerSocket = checkUserresult.rows[0].socket_id
                     console.log("accept-call checkUserresult if callerSocket  ");
                     console.log(callerSocket);
+                  
                     await updatetUserStatus(call.me_id, 0)
 
                     let userIds = await selectMulitple(call.call_id, call.me_id)
 
-                    console.log("accept-call sqlUpdateUser 1 result");
+                    // console.log("accept-call sqlUpdateUser 1 result");
                     console.log(userIds);
                     console.log(userIds.rows[0]);
                     console.log(userIds.rows[1]);
@@ -300,29 +332,30 @@ io.on('connection', async socket => {
                     console.log(startDate);
 
 
-                    console.log("operationId ccccccccccccccccc");
+                    console.log("accept-call operationId ccccccccccccccccc");
                   
                    await UpdateacceptOperation(call.operation_id, 8)
+                   console.log(callerSocket);
 
                     io.to(callerSocket).emit('accept-call', {  "answer_id": call.me_id, "operation_id": call.operation_id })
 
                 }
                 catch (error) {
                     console.log("accept-call checkUserresult if ");
-                    console.log("error 2");
+                    console.log("accept-call error 2");
                     console.log(error);
 
                 }
             }
 
             else {
-                console.log("checkUserresult else ");
-                console.log("end-call ");
+                console.log("accept-call checkUserresult else ");
+                console.log("accept-call ");
             }
 
         }
         catch (error) {
-            console.log("end-callDB error : ")
+            console.log("accept-call error : ")
             console.log(error);
 
         }
@@ -335,7 +368,7 @@ io.on('connection', async socket => {
         try {
 
             let checkUserresult = await selectUser(closecam.call_id)
-            console.log("closecam-call updateUserData 1 sqlCheckUser+++++++++");
+            console.log("closecam-call accept 1 sqlCheckUser+++++++++");
             // // var callerId = checkUserresult.rows[0].user_mobile
 
             // console.log(checkUserresult.rows.length);
@@ -354,7 +387,7 @@ io.on('connection', async socket => {
                     // await updatetUserStatus(call.me_id, 0)
 
                     io.to(callerSocket).emit('closecam-call', { "answer_id": closecam.call_id })
-                    console.log("closecam-call sqlUpdateUser 1 result");
+                    // console.log("closecam-call sqlUpdateUser 1 result");
                     // console.log(result.rows[0]);
                 }
                 catch (error) {
@@ -400,7 +433,7 @@ io.on('connection', async socket => {
         try {
 
             let checkUserresult = await selectUser(end.call_id)
-            console.log("updateUserData 1 sqlCheckUser+++++++++");
+            console.log("end 1 sqlCheckUser+++++++++");
 
           
             if (checkUserresult.rows.length != 0) {
@@ -419,7 +452,7 @@ io.on('connection', async socket => {
                     await updatetUserStatus(end.me_id, 1)
 
 
-                    io.to(callerSocket).emit('end-call', {"answer_id": end.call_id, "event_type": end.event_type, "operation_id": operationId })
+                    // io.to(callerSocket).emit('end-call', {"answer_id": end.call_id, "event_type": end.event_type, "operation_id": operationId })
 
 
                     let userIds = await selectMulitple(end.call_id, end.me_id)
@@ -435,6 +468,8 @@ io.on('connection', async socket => {
 
                     if (end.event_type == "reject-call") {
                         // insertOperation(userIds.rows[0].id, userIds.rows[1].id, 5, startDate)
+                        io.to(callerSocket).emit('end-call', {"answer_id": end.me_id, "event_type": end.event_type, "operation_id": operationId })
+
                         var updateoperation = await UpdateOperation(operationId, 5, startDate)
 
                     }
@@ -443,6 +478,13 @@ io.on('connection', async socket => {
 
                         console.log("cancel-calluuuuuuu");
                         console.log(operationId);
+                        console.log(callerSocket);
+                        io.to(callerSocket).emit('end-call', {"answer_id": end.call_id, "event_type": end.event_type, "operation_id": operationId })
+
+                        var updateoperation = await UpdateOperation(operationId, 6, startDate)
+
+                        // io.to(callerSocket).emit('end-call', {"answer_id": end.me_id, "event_type": end.event_type, "operation_id": operationId })
+
                         // var updateoperation=await  UpdateOperation(operationId,6,startDate)
                     }
 
@@ -450,6 +492,7 @@ io.on('connection', async socket => {
                         console.log("checkUserresult if callerSocket  ");
                         console.log("updateoperation");
 
+                        io.to(callerSocket).emit('end-call', {"answer_id": end.call_id, "event_type": end.event_type, "operation_id": operationId })
 
                         console.log("end.me_id");
                         console.log(end.me_id);
@@ -475,7 +518,7 @@ io.on('connection', async socket => {
                     }
 
                 
-                    console.log("sqlUpdateUser 1 result");
+                    // console.log("sqlUpdateUser 1 result");
                 }
                 catch (error) {
                     console.log("checkUserresult if ");
@@ -500,7 +543,11 @@ io.on('connection', async socket => {
 
     })
 
-})
+   })
+
+//    process.send(data)
+  
+    
 
 
 async function updateUserData(useId, useName, image, socket_id, connected) {
@@ -607,6 +654,34 @@ async function selectUser(useId) {
     }
 }
 
+// async function selectUserByPhoneNumber(useId) {
+//     let req, res;
+//     console.log("selectUser *************** ");
+//     console.log(useId);
+ 
+//     try {
+//         // console.log("selectUser");
+//         // console.log("businesspooloooooooooooooo");
+//         var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
+//         let checkUserresult = await businesspool(req, res, sqlCheckUser, [useId])
+//         // console.log("selectUser  ----");
+
+//         if (checkUserresult.rows.length != 0) {
+//             // console.log(checkUserresult.rows[0].user_mobile);
+//             // console.log(checkUserresult.rows[0].user_name);
+//             // console.log(checkUserresult.rows[0].socket_id);
+//         } else {
+//             console.log("no user");
+//         }
+
+//         return checkUserresult;
+//     }
+//     catch (error) {
+//         console.log("error 4");
+//         console.log(error);
+
+//     }
+// }
 
 async function selectMulitple(useId, me_id) {
     let req, res;
@@ -617,9 +692,10 @@ async function selectMulitple(useId, me_id) {
     try {
         console.log("selectMulitple");
 
-        var sqlCheckUser = `SELECT  id  from connectios_users WHERE user_mobile in (?,?)`;
+        var sqlCheckUser = `SELECT  id ,user_mobile,user_name,user_image_url  from connectios_users WHERE user_mobile in (?,?)`;
         let checkUserresult = await businesspool(req, res, sqlCheckUser, [useId, me_id])
         console.log("selectMulitple  ----");
+        console.log(checkUserresult);
 
         if (checkUserresult.rows.length != 0) {
             console.log(checkUserresult.rows[0].user_mobile);
@@ -643,18 +719,20 @@ async function selectMulitple(useId, me_id) {
 async function insertUser(useId, useName, image, socket_id, connected) {
     let req, res;
     console.log("insertUser ppppppppppp");
-    console.log(useId);
-    console.log(useName);
-    console.log(image);
-    console.log(socket_id);
-    console.log(connected);
+    console.log(useId + useName + image + socket_id + connected);
+
+    // console.log(useId);
+    // console.log(useName);
+    // console.log(image);
+    // console.log(socket_id);
+    // console.log(connected);
 
     try {
         var sql = `INSERT INTO connectios_users (user_mobile, user_name,user_image_url,socket_id,connected) VALUES (?, ?,?,?,?)`;
         let result = await businesspool(req, res, sql, [useId, useName, image, socket_id, connected])
-        console.log("updateUserData 1 result");
+        // console.log("updateUserData 1 result");
 
-        console.log(result);
+        // console.log(result);
     }
     catch (error) {
         console.log("error 3");
@@ -665,14 +743,14 @@ async function insertUser(useId, useName, image, socket_id, connected) {
 async function updatetUser(useId, useName, image, socket_id, connected) {
     let req, res;
     console.log("updatetUser ");
-
+    console.log(useId);
     try {
         var sqlUpdateUser = `UPDATE connectios_users SET user_name = ?,user_image_url = ?,socket_id = ?,connected=?  WHERE user_mobile = ?`;
 
         let result = await businesspool(req, res, sqlUpdateUser, [useName, image, socket_id, connected, useId])
 
-        console.log("sqlUpdateUser 1 result");
-        console.log(result.rows);
+        // console.log("sqlUpdateUser 1 result");
+        // console.log(result.rows);
     }
     catch (error) {
         console.log("error 2");
@@ -710,8 +788,8 @@ async function updatetUserStatus(useId, status) {
         var sqlUpdateUser = `UPDATE connectios_users SET status = ?    WHERE user_mobile = ?`;
         let checkUserresult = await businesspool(req, res, sqlUpdateUser, [status, useId])
 
-        console.log("sqlUpdateUser 1 result");
-        console.log(checkUserresult.rows[0]);
+        // console.log("sqlUpdateUser 1 result");
+        // console.log(checkUserresult.rows[0]);
 
     }
     catch (error) {
