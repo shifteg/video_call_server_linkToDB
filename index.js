@@ -170,12 +170,12 @@ io.on('connection', async socket => {
                     var friendStatus = checkUserresult.rows[0].status
                     console.log("friendConnected==1");
                     console.log(friendConnected);
-                    let userIds = await selectMulitple(message.friendId, message.me_id)
+                    let userIds = await selectMulitple( message.friendId,message.me_id)
                     const d = new Date();
                     var startDate = d
                     console.log(startDate);
 
-                    var operationId = await insertOperation(userIds.rows[0].id, userIds.rows[1].id, 4, startDate)
+                    var operationId = await insertOperation(userIds.rows[0].id,  userIds.rows[1].id, 4, startDate)
                     console.log("operationId");
                     console.log(operationId.rows.insertId);
 
@@ -184,8 +184,31 @@ io.on('connection', async socket => {
                             console.log("friendConnected if ==1");
                             await updatetUserStatus(message.me_id, 0)
                             //    await updatetUserStatus(message.friendId,1)
-                         
-                            io.to(friendSocketVal).emit('send-call', { "message": userIds.rows[1].user_mobile, "username": userIds.rows[1].user_name, "user-image": userIds.rows[1].user_image_url, "operation_id": operationId.rows.insertId })
+                            console.log("send-call-data");
+                            console.log(userIds.rows );
+                            console.log(userIds.rows[1].user_mobile);
+
+                            console.log(userIds.rows[1].user_name);
+
+
+                            userIds.rows.forEach(row => {
+                                console.log("forEach if");
+                                console.log(row);
+
+
+                                if(row.user_mobile==message.me_id){
+
+                                    io.to(friendSocketVal).emit('send-call', { "message": row.user_mobile, "username": row.user_name, "user-image": row.user_image_url, "operation_id": operationId.rows.insertId })
+
+                                }else{
+
+                                    // console.log("forEach else ");
+                                    // console.log(row);
+
+
+                                }
+                            });
+
 
                         } else {
                             console.log("friendStatus else ==0");
@@ -292,40 +315,40 @@ io.on('connection', async socket => {
 
     })
 
-    socket.on('accept-call', async function (call) {
+    socket.on('accept-call', async function (accept) {
 
-        console.log(call)
+        console.log(accept)
         // let val = dict[call.call_id];
         // console.log("friend ID : " + val)
-        console.log("accept-call messagefromcallerId : " + call.call_id)
+        console.log("accept-call messagefromcallerId : " + accept.call_id)
         // console.log("call states : " + call.states)
-        console.log("accept-call me_id : " + call.me_id)
+        console.log("accept-call me_id : " + accept.me_id)
  
         try {
 
-            let checkUserresult = await selectUser(call.call_id)
+            let checkAcceptUserresult = await selectUser(accept.call_id)
             console.log("accept-call accept 1 sqlCheckUser+++++++++");
        
-            if (checkUserresult.rows.length != 0) {
+            if (checkAcceptUserresult.rows.length != 0) {
                 try {
                     console.log("accept-call checkUserresult if end-call88888888888888 ");
-                    console.log(checkUserresult);
-                    console.log(checkUserresult.rows.length);
-                    console.log(checkUserresult.rows[0].socket_id);
+                    console.log(checkAcceptUserresult);
+                    console.log(checkAcceptUserresult.rows.length);
+                    console.log(checkAcceptUserresult.rows[0].socket_id);
                     // var callerName = checkUserresult[0].user_name
                     // var callerImage = checkUserresult[0].user_image_url
-                    var callerSocket = checkUserresult.rows[0].socket_id
-                    console.log("accept-call checkUserresult if callerSocket  ");
-                    console.log(callerSocket);
+                    var callerAcceptSocket = checkAcceptUserresult.rows[0].socket_id
+                    console.log("accept-call checkAcceptUserresult if callerAcceptSocket  ");
+                    console.log(callerAcceptSocket);
                   
-                    await updatetUserStatus(call.me_id, 0)
+                    await updatetUserStatus(accept.me_id, 0)
 
-                    let userIds = await selectMulitple(call.call_id, call.me_id)
+                    let AcceptuserIds = await selectMulitple(accept.call_id, accept.me_id)
 
                     // console.log("accept-call sqlUpdateUser 1 result");
-                    console.log(userIds);
-                    console.log(userIds.rows[0]);
-                    console.log(userIds.rows[1]);
+                    console.log(AcceptuserIds);
+                    console.log(AcceptuserIds.rows[0]);
+                    console.log(AcceptuserIds.rows[1]);
 
                     const d = new Date();
                     var startDate = d
@@ -334,14 +357,14 @@ io.on('connection', async socket => {
 
                     console.log("accept-call operationId ccccccccccccccccc");
                   
-                   await UpdateacceptOperation(call.operation_id, 8)
-                   console.log(callerSocket);
+                   await UpdateacceptOperation(accept.operation_id, 8)
+                   console.log(callerAcceptSocket);
 
-                    io.to(callerSocket).emit('accept-call', {  "answer_id": call.me_id, "operation_id": call.operation_id })
+                    io.to(callerAcceptSocket).emit('accept-call', {  "answer_id": accept.me_id, "operation_id": accept.operation_id })
 
                 }
                 catch (error) {
-                    console.log("accept-call checkUserresult if ");
+                    console.log("accept-call checkAcceptUserresult if ");
                     console.log("accept-call error 2");
                     console.log(error);
 
@@ -349,7 +372,7 @@ io.on('connection', async socket => {
             }
 
             else {
-                console.log("accept-call checkUserresult else ");
+                console.log("accept-call checkAcceptUserresult else ");
                 console.log("accept-call ");
             }
 
