@@ -7,12 +7,13 @@ const app = express();
 const http = require('http')
 const businesspool = require('./businessPool')
 
+const setUserData = require('./setUsersdData')
 // var PORT = process.env.PORT || 3001;
 // create server
 
 const server = http.createServer(app);
 // const io = require('socket.io')(server);
-const io = require('socket.io')(server, { origins: '*:*'});
+const io = require('socket.io')(server, { origins: '*:*' });
 //show static files in 'public' directory
 
 const fs = require('fs');
@@ -77,44 +78,73 @@ app.get('/notconnect', async function (req, res) {
     if (req.query.id != null) {
 
         let selectUserdata = await selectUser(req.query.id)
+
+
         console.log('selectUserdata  :');
         console.log(selectUserdata);
         console.log('selectUserdata 33 :');
 
-          if(selectUserdata.rows.length != 0){ 
+        if (selectUserdata.rows.length != 0) {
 
-               if (req.query.connect_status === "true") {
-            console.log('notconnect if :');
+            if (req.query.connect_status === "true") {
+                console.log('notconnect if :');
 
-            await updatetUserConnected(req.query.id, 1)
-            return res.send("user connected ");
+                await updatetUserConnected(req.query.id, 1)
+                return res.send("user connected ");
 
-        } else if (req.query.connect_status === "false") {
-            console.log('notconnect else  if :');
+            } else if (req.query.connect_status === "false") {
+                console.log('notconnect else  if :');
 
-            await updatetUserConnected(req.query.id, 0)
-            return res.send("user not connected ");
+                await updatetUserConnected(req.query.id, 0)
+                return res.send("user not connected ");
 
-        }
-        else {
-            console.log('notconnect else :');
-            return res.send(" connect_status error");
-        }
-    
-    
-    }else{
+            }
+            else {
+                console.log('notconnect else :');
+                return res.send(" connect_status error");
+            }
+
+
+        } else {
             return res.send("user not join app");
 
         }
 
-     
-    } else { 
+
+    } else {
         return res.send("data is null");
 
     }
 
     res.send("Welcome to Homepage");
 });
+
+app.get('/logs', async function (req, res) {
+
+    console.log('logs1');
+
+    if (req.query.id != null) {
+
+        let selectUserLogs = await selectAllUserLogs(req.query.id)
+
+        console.log('logs2 selectUserLogs');
+
+        console.log(selectUserLogs);
+
+        if (selectUserLogs.rows.length != 0) {
+            return res.send(selectUserLogs);
+        } else {
+            return res.send("no logs");
+        }
+    } else {
+        return res.send("data is null");
+
+    }
+
+    res.send("Welcome to Homepage");
+});
+
+
 
 // var dict = {};
 
@@ -138,7 +168,7 @@ console.dir("server id ip for test : " + ip.address());
 
 
 // for(var i=0;  i<=2;   i++){ }
-  
+
 //   var  socket= io( "?id="+i+"&name="+i+"&image="+i+"")
 
 io.on('connection', async socket => {
@@ -149,7 +179,7 @@ io.on('connection', async socket => {
         //     var image =i;
         //     var socket1 =i; 
         console.log("connection 1  socket : " + socket)
-        console.log("connection 1  .handshake.query.id : "  )
+        console.log("connection 1  .handshake.query.id : ")
 
         console.log(socket.handshake.query.id)
 
@@ -171,7 +201,7 @@ io.on('connection', async socket => {
             // dict[useId] = socket.id;
             // const update= await
 
-           await updateUserData(useId, useName, image, socket.id, 1);
+            await updateUserData(useId, useName, image, socket.id, 1);
         } else {
 
             console.log("socket query =null")
@@ -189,493 +219,277 @@ io.on('connection', async socket => {
     // console.log("id" + socket.id)
 
     socket.on('send-call', async function (message) {
-        console.log("message1112")
+        console.log("send-call1")
 
-        console.log(message)
 
         try {
+            console.log(message)
+            let messageCallerId = message.me_id
+            let messageAnswerId = message.friendId
             const d = new Date();
             var startDate = d
             console.log(startDate);
-            let selectFriend = await selectUser(message.friendId)
-            let selectMe = await selectUser(message.me_id)
+            let usersSortDataSendCall = await getUserDataAndSort(messageCallerId, messageAnswerId)
+            var callerData = usersSortDataSendCall._caller;
+            var answerData = usersSortDataSendCall._answer;
 
-            console.log("send-call send 1 sqlCheckUser+++++++++");
+            console.log("send-call2 ");
+            console.log(answerData.id);
 
+            if (answerData.id != null) {
 
-            if (selectFriend.rows.length != 0) {
                 try {
-                    console.log("send-call send if end-call88888888888888 ");
-                    console.log(selectFriend);
-                    console.log(selectFriend.rows.length);
-                    console.log(selectFriend.rows[0].socket_id);
+                    console.log("send-call3");
+                    console.log(answerData);
+                    console.log(answerData.socket_id);
+                    console.log("send-call4 try ")
 
-                    // var callerName = checkUserresult[0].user_name
-                    // var callerImage = checkUserresult[0].user_image_url
-                    // var callerSocket = checkUserresult.rows[0].socket_id
-                    // var friendSocketVal = selectFriend.rows[0].socket_id
-                    // var friendConnected = selectFriend.rows[0].connected
-                    // var friendName = selectFriend.rows[0].user_name
-                    // var friendImage = selectFriend.rows[0].user_image_url
-                    // var friendStatus = selectFriend.rows[0].status
-                    console.log("friendConnected==1");
-                    // console.log(friendConnected);
-                   
-                    console.log("send-calluserIds")
-                  
-                    // console.log("operationId");
-                    // console.log(operationId.rows.insertId);
+                    console.log(answerData.connected)
+                    console.log(answerData.status)
 
-                    if (selectFriend.rows[0].connected == 1) {
-                        if (selectFriend.rows[0].status == 1) {
-                            // var userIds = await selectMulitple( message.friendId,message.me_id)
-
-                            console.log(selectMe)
-         
-                            console.log("friendConnected if ==1");
-                            var operationId = await insertOperation(selectMe.rows[0].id,  selectFriend.rows[0].id, 4, startDate)
-
-                            await updatetUserStatus(message.me_id, 0)
-                            //    await updatetUserStatus(message.friendId,1)
-                            console.log("send-call-data");
-                            // console.log(userIds.rows );
-                            // console.log(userIds.rows[1].user_mobile);
-
-                            // console.log(userIds.rows[1].user_name);
-
-                            io.to( selectFriend.rows[0].socket_id).emit('send-call', { "message": selectMe.rows[0].user_mobile, "username": selectMe.rows[0].user_name, "user-image": selectMe.rows[0].user_image_url, "operation_id": operationId.rows.insertId })
-
-                            // userIds.rows.forEach(row => {
-                            //     console.log("forEach if");
-                            //     console.log(row);
-
-
-                            //     if(row.user_mobile==message.me_id){
-
-                            //         io.to(friendSocketVal).emit('send-call', { "message": row.user_mobile, "username": row.user_name, "user-image": row.user_image_url, "operation_id": operationId.rows.insertId })
-
-                            //     }else{
-
-                            //         // console.log("forEach else ");
-                            //         // console.log(row);
-
-
-                            //     }
-                            // });
-
+                    if (answerData.connected == 1) {
+                        if (answerData.status == 1) {
+                            console.log(answerData)
+                            console.log("send-call5 friendConnected if ==1");
+                            var operationId = await insertOperation(callerData.id, answerData.id, 4, startDate)
+                            await updatetUserStatus(callerData.id, 0)
+                            io.to(answerData.socket_id).emit('send-call', { "message": callerData.user_mobile, "username": callerData.user_name, "user-image": callerData.user_image_url, "operation_id": operationId.rows.insertId })
 
                         } else {
-                            console.log("friendStatus else ==0");
-                            // console.log(friendStatus);
+                            console.log("send-call6 friendStatus else ==0");
                             try {
+                                console.log("send-call7  call-busy ");
+                                try {
+                                    var operationId = await insertOperation(callerData.id, answerData.id, 3, startDate)
 
-                                // let checkMyesult = await selectUser(message.me_id)
-                                // var userIds = await selectMulitple(message.friendId, message.me_id)
-                                // let selectFriend = await selectUser(message.friendId)
-                                // let selectMe = await selectUser(message.me_id)
+                                    io.to(callerData.socket_id).emit('end-call', { "answer_id": answerData.user_mobile, "event_type": "busy-call", "operation_id": operationId.rows.insertId })
+                                } catch (error) {
+                                    console.log("send-call8  error ");
 
-                                console.log(userIds)
-                                console.log("send-call end-call-busy ");
-    
-                                if (userIds.rows.length != 0) {
-                                    try {
-                                        var operationId = await insertOperation(selectMe.rows[0].id, selectFriend.rows[0].id, 3, startDate)
-                                        io.to(selectMe.rows[0].socket_id).emit('end-call', { "answer_id": message.friendId, "event_type": "busy-call", "operation_id": operationId.rows.insertId })
+                                    console.log(error);
+                                };
 
 
-                                        // userIds.rows.forEach(row => {
-                                        //     console.log("forEach if call-busy");
-                                        //     console.log(row.id);
-                                        //     console.log(row.socket_id);
-                                        //     if (row.user_mobile == message.me_id) {
-                                        //         console.log(row.user_mobile);                            // console.log("send-calluserIds2");
-                                        //         console.log(message.me_id);
-                                        //         io.to(row.socket_id).emit('end-call', { "answer_id": message.friendId, "event_type": "busy-call", "operation_id": operationId.rows.insertId })
-                                        //         console.log("*********if user not connected **********");                            // console.log("send-calluserIds2");
-    
-                                        //         updatetUserStatus(message.me_id, 1)
-    
-                                        //     } else {
-    
-    
-                                        //     }
-                                        // });
-                                    } catch (error) {
-                                        console.log(error);
-                                    };
-                                   console.log("*************************");
-                                 }
-    
                             } catch (error) {
-                                console.log("send-call error33");
+                                console.log("send-call9 error3");
                                 console.log(error);
                             }
-                            // try {
-
-                            //     let checkMyesult = await selectUser(message.me_id)
-
-                            //     console.log("send-call friendStatus 0 sqlCheckUser+++++++++");
-
-                            //     if (checkMyesult.rows.length != 0) { 
-                            //         var mySocket = checkMyesult.rows[0].socket_id
-                                 
-
-                           
-                            //         await updatetUserStatus(message.me_id, 1)
-                            //         console.log("send-call  userbusyyyyyyyyyyyy");
-                            //         console.log("send-call mySocket");
-                            //         console.log(  mySocket);
-                            //         // UpdateOperation(operationId.rows.insertId, 3, startDate)
-                            //         var operationId = await insertOperation(userIds.rows[0].id,  userIds.rows[1].id, 3, startDate)
-
-                                  
-                                  
-                            //         io.to(mySocket).emit('end-call', {  "answer_id": message.me_id, "event_type": "busy-call" , "operation_id": operationId.rows.insertId})    // if (message.event_type == "busy-call") {
-                            //         //     // user busy
-                            //         //     let userIds = await selectMulitple(message.friendId, message.me_id)
-                            //         //     const d = new Date();
-                            //         //     var startDate = d
-                            //         //     console.log(startDate);
-                            //         //     await insertOperation(userIds.rows[0].id, userIds.rows[1].id, 3, startDate)
-
-                            //         // }
-                            //                     }
-
-                            // } catch (error) {
-                            //     console.log("send-call error");
-                            //     console.log(error);
-                            // }
                         }
 
-
                     } else {
-                        console.log("friendConnected else ==0");
-                        console.log(friendConnected);
+                        console.log("send-call10 else ==0");
+                        console.log(answerData.connected);
 
                         try {
 
-                            // let checkMyesult = await selectUser(message.me_id)
-                            var userIds = await selectMulitple(message.friendId, message.me_id)
-                            console.log(userIds)
-                            console.log("send-call end-call s ");
+                            console.log("send-call11 end-call not_connected_call");
 
-                            if (userIds.rows.length != 0) {
-                                try {
-                                    var operationId = await insertOperation(selectMe.rows[0].id, selectFriend.rows[0].id, 2, startDate)
-                                   
-                                    io.to(selectMe.rows[0].socket_id).emit('end-call', { "answer_id": message.friendId, "event_type": "not_connected_call", "operation_id": operationId.rows.insertId })
+                            try {
+                                var operationId = await insertOperation(callerData.id, answerData.id, 2, startDate)
 
-                                    // userIds.rows.forEach(row => {
-                                    //     console.log("forEach if not_connected_call");
-                                    //     console.log(row.id);
-                                    //     console.log(row.socket_id);
-                                    //     if (row.user_mobile == message.me_id) {
-                                    //         console.log(row.user_mobile);                            // console.log("send-calluserIds2");
-                                    //         console.log(message.me_id);
-                                    //         console.log("*********if user not connected **********");                            // console.log("send-calluserIds2");
+                                io.to(callerData.socket_id).emit('end-call', { "answer_id": answerData.user_mobile, "event_type": "not_connected_call", "operation_id": operationId.rows.insertId })
 
-                                    //         updatetUserStatus(message.me_id, 1)
-
-                                    //     } else {
-
-
-                                    //     }
-                                    // });
-                                } catch (error) {
-                                    console.log(error);
-                                };
-                               console.log("*************************");
-                             }
+                            } catch (error) {
+                                console.log(error);
+                            };
+                            console.log("send-call12");
+                            // }
 
                         } catch (error) {
-                            console.log("send-call error33");
+                            console.log("send-call13  error");
                             console.log(error);
                         }
                     }
 
-                    // console.log("send-call sqlUpdateUser 1 result");
                 }
                 catch (error) {
-                    console.log("send-call checkUserresult if ");
-                    console.log("error 2");
+
+                    console.log("send-call14 error");
                     console.log(error);
                 }
             }
 
             else {
-
-                // let userIds = await selectMulitple(message.me_id)
-                // const d = new Date();
-                // var startDate = d
-                // console.log(startDate);
-                console.log("checkUserresult else ");
-                console.log("send-call ");
-               
-                var operationId =   await insertOperation(selectMe.rows[0].id, message.friendId, 1, startDate)
-                // let checkMyesult = await selectUser(message.me_id)
-                // var mySocket = checkMyesult.rows[0].socket_id
-                io.to(selectMe.rows[0].socket_id).emit('end-call', {  "answer_id": message.me_id, "event_type": "not_join", "operation_id": operationId.rows.insertId })
-
+                console.log("send-call15 ");
+                var operationId = await insertOperation(callerData.id, messageAnswerId, 1, startDate)
+                io.to(callerData.socket_id).emit('end-call', { "answer_id": messageAnswerId, "event_type": "not_join", "operation_id": operationId.rows.insertId })
             }
 
         }
         catch (error) {
-            console.log("send-callDB error : ")
+            console.log("send-call16 error")
             console.log(error);
 
         }
-
-        /***************************************************************************************************************************** */
- 
-        console.log(message)
-        // io.to(val).emit('send-call', { "message": message.me_id, "username": message.callerName, "use-rimage": message.callerImage })
-
     })
+    /***************************************************************************************************************************** */
 
     socket.on('accept-call', async function (accept) {
-
+        console.log("accept-call1")
         console.log(accept)
-        // let val = dict[call.friendId];
-        // console.log("friend ID : " + val)
-        console.log("accept-call messagefromcallerId : " + accept.friendId)
-        // console.log("call states : " + call.states)
-        console.log("accept-call me_id : " + accept.me_id)
- 
+
         try {
+            /************************* */
+            const d = new Date();
+            var startDate = d
+            console.log(startDate);
 
-            let checkAcceptUserresult = await selectUser(accept.friendId)
-            console.log("accept-call accept 1 sqlCheckUser+++++++++");
-       
-            if (checkAcceptUserresult.rows.length != 0) {
+            let acceptCallerId = accept.me_id
+            let accepteAnswerId = accept.friendId
+
+            let usersSortDataAcceptCall = await getUserDataAndSort(acceptCallerId, accepteAnswerId)
+            let callerData = usersSortDataAcceptCall._caller;
+            let answerData = usersSortDataAcceptCall._answer;
+
+            /******************************************************************************************************************************* */
+
+            console.log("accept-call2");
+
+            if (answerData.id != 0) {
                 try {
-                    console.log("accept-call checkUserresult if end-call88888888888888 ");
-                    console.log(checkAcceptUserresult);
-                    console.log(checkAcceptUserresult.rows.length);
-                    console.log(checkAcceptUserresult.rows[0].socket_id);
-                    // var callerName = checkUserresult[0].user_name
-                    // var callerImage = checkUserresult[0].user_image_url
-                    var callerAcceptSocket = checkAcceptUserresult.rows[0].socket_id
-                    console.log("accept-call checkAcceptUserresult if callerAcceptSocket  ");
-                    console.log(callerAcceptSocket);
-                  
-                    await updatetUserStatus(accept.me_id, 0)
 
-                    let AcceptuserIds = await selectMulitple(accept.friendId, accept.me_id)
-
-                    // console.log("accept-call sqlUpdateUser 1 result");
-                    console.log(AcceptuserIds);
-                    console.log(AcceptuserIds.rows[0]);
-                    console.log(AcceptuserIds.rows[1]);
-
-                    const d = new Date();
-                    var startDate = d
-                    console.log(startDate);
-
-
-                    console.log("accept-call operationId ccccccccccccccccc");
-                  
-                   await UpdateacceptOperation(accept.operation_id, 8)
-                   console.log(callerAcceptSocket);
-
-                    io.to(callerAcceptSocket).emit('accept-call', {  "answer_id": accept.me_id, "operation_id": accept.operation_id })
+                    console.log("accept-call3");
+                    await updatetUserStatus(callerData.id, 0)
+                    console.log("accept-call4");
+                    await UpdateacceptOperation(accept.operation_id, 8)
+                    io.to(answerData.socket_id).emit('accept-call', { "answer_id": acceptCallerId, "operation_id": accept.operation_id })
 
                 }
                 catch (error) {
-                    console.log("accept-call checkAcceptUserresult if ");
-                    console.log("accept-call error 2");
+                    console.log("accept-call5 error ");
                     console.log(error);
-
                 }
             }
-
             else {
-                console.log("accept-call checkAcceptUserresult else ");
-                console.log("accept-call ");
+                console.log("accept-call6 else");
             }
-
         }
         catch (error) {
-            console.log("accept-call error : ")
+            console.log("accept-call7 error")
             console.log(error);
 
         }
     })
-    socket.on('close-camera-call', async function (closecam) {
-        console.log("closecam")
 
-        console.log(closecam)
+
+    /***************************************************************************************************************************************************** */
+    socket.on('close-camera-call', async function (closecamera) {
+        console.log("close-camera-call1")
+        console.log(closecamera)
 
         try {
+            /************************* */
+            let closeCameraCallerId = closecamera.me_id
+            let closeCameraAnswerId = closecamera.friendId
+            let usersSortDataCloseCamera = await getUserDataAndSort(closeCameraCallerId, closeCameraAnswerId)
+            let callerData = usersSortDataCloseCamera._caller;
+            let answerData = usersSortDataCloseCamera._answer;
 
-            let checkUserresult = await selectUser(closecam.friendId)
-            console.log("close-camera-call accept 1 sqlCheckUser+++++++++");
-            // // var callerId = checkUserresult.rows[0].user_mobile
+            /******************************************************************************************************************************* */
+            console.log("close-camera-call2 ");
 
-            // console.log(checkUserresult.rows.length);
-            // console.log(checkUserresult.rows);
-
-            if (checkUserresult.rows.length != 0) {
+            if (answerData.id != 0) {
                 try {
-                    console.log("close-camera-call checkUserresult if end-call88888888888888 ");
-                    console.log(checkUserresult);
-                    console.log(checkUserresult.rows.length);
-                    console.log(checkUserresult.rows[0].socket_id);
-
-                    var callerSocket = checkUserresult.rows[0].socket_id
-                    console.log("close-camera-call checkUserresult if callerSocket  ");
-                    console.log(callerSocket);
-                    // await updatetUserStatus(call.me_id, 0)
-
-                    io.to(callerSocket).emit('close-camera-call', { "answer_id": closecam.friendId,"states":closecam.states })
-                    // console.log("close-camera-call sqlUpdateUser 1 result");
-                    // console.log(result.rows[0]);
+                    io.to(answerData.socket_id).emit('close-camera-call', { "answer_id": answerData.user_mobile, "states": closecamera.states })
                 }
                 catch (error) {
-                    console.log("close-camera-call checkUserresult if ");
-                    console.log("error 2");
+                    console.log("close-camera-call3 error  ");
                     console.log(error);
-
                 }
             }
-
             else {
-                console.log("checkUserresult else ");
-                console.log("close-camera-call ");
+                console.log("close-camera-call4 else ");
             }
-
         }
         catch (error) {
-            console.log("close-camera-call error : ")
+            console.log("close-camera-call5 error : ")
             console.log(error);
-
         }
-     
     })
 
 
     socket.on('end-call', async function (end) {
-        console.log("end-callttttttttttttttttttt ")
+        console.log("end-call1")
         console.log(end)
-        // let val = dict[end.friendId];
-        let eventType = end.event_type
-        let operationId = end.operation_id
-        console.log("operation_id");
-        console.log(operationId);
-        // console.log("end-call friend ID : " + val)
-        console.log("end-call call messagefromcallerId : " + end.friendId)
-        // console.log("end-call call states : " + end.states)
-        console.log("end-call call end.event_type : " + end.event_type)
-        console.log("end-call call eventType : " + eventType)
-        const d = new Date();
-        var endDate = d
 
-        console.log(endDate);
         try {
 
-            let checkUserresult = await selectUser(end.friendId)
-            console.log("end 1 sqlCheckUser+++++++++");
+            /************************* */
+            let endCallerId = end.me_id
+            let endAnswerId = end.friendId
+            let usersSortDataEnd = await getUserDataAndSort(endCallerId, endAnswerId)
+            let callerData = usersSortDataEnd._caller;
+            let answerData = usersSortDataEnd._answer;
 
-          
-            if (checkUserresult.rows.length != 0) {
+            /******************************************************************************************************************************* */
+            let eventType = end.event_type
+            let operationId = end.operation_id
+
+            console.log("end operation_id");
+            console.log(operationId);
+
+            const d = new Date();
+            var endDate = d
+            console.log(endDate);
+
+            console.log("end-call2");
+
+            if (answerData.id != 0) {
                 try {
-                    console.log("checkUserresult if end-call88888888888888 ");
-                    console.log(checkUserresult);
-                    console.log(checkUserresult.rows.length);
-                    console.log(checkUserresult.rows[0].socket_id);
-
-                   
-                    var callerSocket = checkUserresult.rows[0].socket_id
-                    console.log("checkUserresult if callerSocket  ");
-                    console.log(callerSocket);
 
                     await updatetUserStatus(end.friendId, 1)
                     await updatetUserStatus(end.me_id, 1)
 
-
-                    // io.to(callerSocket).emit('end-call', {"answer_id": end.friendId, "event_type": end.event_type, "operation_id": operationId })
-
-
-                    let userIds = await selectMulitple(end.friendId, end.me_id)
-                    console.log("userIds");
-
-                    console.log(userIds);
-
-                    const d = new Date();
-                    var startDate = d
-
-                    console.log(startDate);
-
-
-                    if (end.event_type == "reject-call") {
-                        // insertOperation(userIds.rows[0].id, userIds.rows[1].id, 5, startDate)
-                        io.to(callerSocket).emit('end-call', {"answer_id": end.me_id, "event_type": end.event_type, "operation_id": operationId })
-
-                        var updateoperation = await UpdateOperation(operationId, 5, startDate)
+                    if (eventType == "reject-call") {
+                        console.log("end-call3 reject");
+                        io.to(answerData.socket_id).emit('end-call', { "answer_id": callerData.user_mobile, "event_type": eventType, "operation_id": operationId })
+                        var updateoperation = await UpdateOperation(operationId, 5, endDate)
 
                     }
-                    else if (end.event_type == "cancel-call") {
-                        // insertOperation(userIds.rows[0].id, userIds.rows[1].id, 6, startDate)
+                    else if (eventType == "cancel-call") {
 
-                        console.log("cancel-calluuuuuuu");
-                        console.log(operationId);
-                        console.log(callerSocket);
-                        io.to(callerSocket).emit('end-call', {"answer_id": end.friendId, "event_type": end.event_type, "operation_id": operationId })
+                        console.log("end-call4 cancel-call");
 
-                        // var updateoperation = await UpdateOperation(operationId, 6, startDate)
+                        io.to(answerData.socket_id).emit('end-call', { "answer_id": callerData.user_mobile, "event_type": eventType, "operation_id": operationId })
 
-                        // io.to(callerSocket).emit('end-call', {"answer_id": end.me_id, "event_type": end.event_type, "operation_id": operationId })
 
-                        // var updateoperation=await  UpdateOperation(operationId,6,startDate)
                     }
 
-                    else if (end.event_type == "end-call") {
-                        console.log("checkUserresult if callerSocket  ");
-                        console.log("updateoperation");
+                    else if (eventType == "end-call") {
+                        console.log("end-call5 end-call");
 
-                        io.to(callerSocket).emit('end-call', {"answer_id": end.friendId, "event_type": end.event_type, "operation_id": operationId })
-
-                        console.log("end.me_id");
-                        console.log(end.me_id);
+                        io.to(answerData.socket_id).emit('end-call', { "answer_id": callerData.user_mobile, "event_type": eventType, "operation_id": operationId })
 
                         var operationData = await selectOperation(operationId)
-                        console.log("operationDatarrrrrrrrr");
-                        console.log(operationData);
-                        console.log(operationData.rows.end_date);
 
                         if (operationData.rows.end_date == null) {
+                            console.log("end-call6 end-Date");
 
-                            var updateoperation = await UpdateOperation(operationId, 8, startDate)
+                            var updateoperation = await UpdateOperation(operationId, 8, endDate)
 
                         } else {
 
                         }
-
-                        // var updateoperation=await UpdateOperation(operationId,8,startDate)
-
-                        console.log(updateoperation);
-
+                        // console.log(updateoperation);
 
                     }
-
-                
-                    // console.log("sqlUpdateUser 1 result");
                 }
                 catch (error) {
-                    console.log("checkUserresult if ");
-                    console.log("error 2");
+                    console.log("end-call7 error ");
+
                     console.log(error);
 
                 }
             }
 
             else {
-                console.log("checkUserresult else ");
-                console.log("end-call ");
+                console.log("end-call8 else");
+                ;
             }
 
         }
         catch (error) {
-            console.log("end-callDB error : ")
+            console.log("end-call9 error")
             console.log(error);
 
         }
@@ -683,8 +497,8 @@ io.on('connection', async socket => {
 
     })
 
-   })
- 
+})
+
 async function updateUserData(useId, useName, image, socket_id, status) {
 
     console.log("updateUserData : " + useId)
@@ -697,62 +511,30 @@ async function updateUserData(useId, useName, image, socket_id, status) {
             let req, res;
 
             try {
-
-                // console.log("getupdateUserDataUserData if  : " + useId)
-                // // selectUser(useId)
-                // // var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
-                // console.log("updateUserData7777777777777 if  : ")
-
                 let checkUserresult = await selectUser(useId)
-                // console.log("updateUserData 1 sqlCheckUser+++++++++");
-                // // // var callerId = checkUserresult.rows[0].user_mobile
-
-                // console.log(checkUserresult.rows.length);
-                // console.log(checkUserresult.rows);
-                // // console.log(checkUserresult.rows[0].socket_id);
-
-
                 if (checkUserresult.rows.length != 0) {
                     try {
-                        // console.log("checkUserresult if ");
 
                         await updatetUser(useId, useName, image, socket_id, status)
-                        // var sqlUpdateUser = `UPDATE connectios_users SET socket_id = ? WHERE user_mobile = ?`;
-                        // let result = await businesspool(req, res, sqlUpdateUser, [socket_id, useId])
 
-                        // console.log("sqlUpdateUser 1 result");
-                        // console.log(result.rows[0]);
                     }
                     catch (error) {
-                        // console.log("checkUserresult if ");
-                        // console.log("error 2");
 
                     }
                 }
 
                 else {
-                    // console.log("checkUserresult else ");
                     await insertUser(useId, useName, image, socket_id)
-                    // console.log("user inserted ");
                 }
             }
             catch (error) {
-                // try {
-                
-                // }
-                // catch (error) {
-                //     console.log("error 3");
-                //     console.log(error);
 
-
-                // }
                 console.log("updateUserData error 1");
                 console.log(error);
             }
 
         }
         else {
-            // return result;
             console.log("getUserData 8 :else ")
 
         }
@@ -767,18 +549,15 @@ async function selectUser(useId) {
     let req, res;
     console.log("selectUser *************** ");
     console.log(useId);
- 
+
     try {
-        // console.log("selectUser");
-        // console.log("businesspooloooooooooooooo");
+
         var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
         let checkUserresult = await businesspool(req, res, sqlCheckUser, [useId])
-        // console.log("selectUser  ----");
+
 
         if (checkUserresult.rows.length != 0) {
-            // console.log(checkUserresult.rows[0].user_mobile);
-            // console.log(checkUserresult.rows[0].user_name);
-            // console.log(checkUserresult.rows[0].socket_id);
+
         } else {
             console.log("no user");
         }
@@ -792,64 +571,54 @@ async function selectUser(useId) {
     }
 }
 
-// async function selectUserByPhoneNumber(useId) {
-//     let req, res;
-//     console.log("selectUser *************** ");
-//     console.log(useId);
- 
-//     try {
-//         // console.log("selectUser");
-//         // console.log("businesspooloooooooooooooo");
-//         var sqlCheckUser = `SELECT * FROM connectios_users WHERE user_mobile =?`;
-//         let checkUserresult = await businesspool(req, res, sqlCheckUser, [useId])
-//         // console.log("selectUser  ----");
+async function getUserDataAndSort(caller, answer) {
 
-//         if (checkUserresult.rows.length != 0) {
-//             // console.log(checkUserresult.rows[0].user_mobile);
-//             // console.log(checkUserresult.rows[0].user_name);
-//             // console.log(checkUserresult.rows[0].socket_id);
-//         } else {
-//             console.log("no user");
-//         }
+    let getUsersData = await selectMulitple(caller, answer)
 
-//         return checkUserresult;
-//     }
-//     catch (error) {
-//         console.log("error 4");
-//         console.log(error);
+    let SortUserData = setUserData.getUserData(caller, answer, getUsersData)
 
-//     }
-// }
+    console.log("returndata77777777777777777777777")
 
-async function selectMulitple(useId, me_id) {
+    console.log(SortUserData._caller)
+    console.log(SortUserData._answer)
+
+    return SortUserData;
+
+}
+
+async function selectMulitple(caller_id, answer_id) {
     let req, res;
     console.log("selectMulitple *************** ");
-    console.log(useId);
+    console.log(caller_id);
 
-    // var useIdstring = useId.toString()
     try {
         console.log("selectMulitple");
 
-        var sqlCheckUser = `SELECT  id ,user_mobile,user_name,user_image_url,socket_id  from connectios_users WHERE user_mobile in (?,?)`;
-        let checkUserresult = await businesspool(req, res, sqlCheckUser, [useId, me_id])
+        var sqlCheckUser = `SELECT  * from connectios_users WHERE user_mobile in (?,?)`;
+        let checkUserresult = await businesspool(req, res, sqlCheckUser, [caller_id, answer_id])
         console.log("selectMulitple  ----");
         console.log(checkUserresult);
 
         if (checkUserresult.rows.length != 0) {
-            console.log(checkUserresult.rows[0].user_mobile);
-            console.log(checkUserresult.rows[0].user_name);
-            console.log(checkUserresult.rows[0].socket_id);
-            console.log("checkUserresultssssssssssssss");
+
+            // console.log(checkUserresult.rows[0].user_mobile);
+            // console.log(checkUserresult.rows[0].user_name);
+            // console.log(checkUserresult.rows[0].socket_id);
+            // console.log("checkUserresultssssssssssssss");
+
+            return checkUserresult;
+
         } else {
             console.log("no  Mulitple users");
+            return null;
+
         }
 
-        return checkUserresult;
     }
     catch (error) {
         console.log("error 4");
         console.log(error);
-
+        return null;
     }
 }
 
@@ -857,24 +626,16 @@ async function selectMulitple(useId, me_id) {
 async function insertUser(useId, useName, image, socket_id) {
     let req, res;
     console.log("insertUser ppppppppppp");
-    console.log(useId + useName + image + socket_id    );
-
-    // console.log(useId);
-    // console.log(useName);
-    // console.log(image);
-    // console.log(socket_id);
-    // console.log(connected);
+    console.log(useId + useName + image + socket_id);
 
     try {
         var sql = `INSERT INTO connectios_users (user_mobile, user_name,user_image_url,socket_id) VALUES (?, ?,?,?)`;
-        let result = await businesspool(req, res, sql, [useId, useName, image, socket_id])
-        // console.log("updateUserData 1 result");
+        await businesspool(req, res, sql, [useId, useName, image, socket_id])
 
-        // console.log(result);
     }
     catch (error) {
         console.log(" insertUser error 3");
-        console.log(  error  );
+        console.log(error);
     }
 }
 
@@ -885,10 +646,8 @@ async function updatetUser(useId, useName, image, socket_id, status) {
     try {
         var sqlUpdateUser = `UPDATE connectios_users SET user_name = ?,user_image_url = ?,socket_id = ?,status=?  WHERE user_mobile = ?`;
 
-        let result = await businesspool(req, res, sqlUpdateUser, [useName, image, socket_id, status, useId])
+        await businesspool(req, res, sqlUpdateUser, [useName, image, socket_id, status, useId])
 
-        // console.log("sqlUpdateUser 1 result");
-        // console.log(result.rows);
     }
     catch (error) {
         console.log("error 2");
@@ -896,7 +655,6 @@ async function updatetUser(useId, useName, image, socket_id, status) {
     }
 
 }
-
 async function updatetUserConnected(useId, connected) {
     let req, res;
     console.log("updatetUserConnected ");
@@ -906,15 +664,10 @@ async function updatetUserConnected(useId, connected) {
         var sqlUpdateUser = `UPDATE connectios_users SET  connected=?  WHERE user_mobile = ?`;
         let checkUserresult = await businesspool(req, res, sqlUpdateUser, [connected, useId])
 
-        // console.log("sqlUpdateUser 1 result");
-        // console.log(checkUserresult.rows[0]);
-
     }
     catch (error) {
         console.log("error 2");
-
     }
-
 }
 
 async function updatetUserStatus(useId, status) {
@@ -926,9 +679,6 @@ async function updatetUserStatus(useId, status) {
         var sqlUpdateUser = `UPDATE connectios_users SET status = ?    WHERE user_mobile = ?`;
         let checkUserresult = await businesspool(req, res, sqlUpdateUser, [status, useId])
 
-        // console.log("sqlUpdateUser 1 result");
-        // console.log(checkUserresult.rows[0]);
-
     }
     catch (error) {
         console.log("updatetUserStatus error 5552");
@@ -937,28 +687,6 @@ async function updatetUserStatus(useId, status) {
     }
 
 }
-
-// async function updatetUserConnected(useId, connected) {
-//     let req, res;
-//     console.log("updatetUserStatus ");
-
-
-//     try {
-//         var sqlUpdateUser = `UPDATE connectios_users SET connected = ?    WHERE user_mobile = ?`;
-//         let checkUserUpdateConnected = await businesspool(req, res, sqlUpdateUser, [connected, useId])
-
-//         console.log("sqlUpdateUser 1 result");
-//         console.log(checkUserUpdateConnected);
-//         // console.log(checkUserresult.rows[0]);
-
-//     }
-//     catch (error) {
-//         console.log("updatetUserStatus error 5552");
-//         console.log(error);
-
-//     }
-
-// }
 
 async function insertOperation(from, to, status, startDate) {
     let req, res;
@@ -974,7 +702,6 @@ async function insertOperation(from, to, status, startDate) {
     catch (error) {
         console.log("insertOperation error 1");
         console.log(error);
-
     }
 }
 
@@ -986,9 +713,7 @@ async function UpdateOperation(operationId, status, endTime) {
         var sqlUpdateOperation = `UPDATE logs_history SET status = ?, end_date = ?   WHERE id = ?`;
         let checkUOperationResult = await businesspool(req, res, sqlUpdateOperation, [status, endTime, operationId])
 
-        // var sql = `INSERT INTO logs_history (user_id,to_id,status,start_date) VALUES (?,?,?,?)`;
-        // let result = await businesspool(req, res, sql, [from, to, status, startDate])
-        console.log("UpdateOperation 1 result");
+
         console.log(checkUOperationResult);
         return checkUOperationResult;
     }
@@ -1007,8 +732,6 @@ async function UpdateacceptOperation(operationId, status) {
         var sqlUpdateOperation = `UPDATE logs_history SET status = ?  WHERE id = ?`;
         let checkUOperationResult = await businesspool(req, res, sqlUpdateOperation, [status, operationId])
 
-        // var sql = `INSERT INTO logs_history (user_id,to_id,status,start_date) VALUES (?,?,?,?)`;
-        // let result = await businesspool(req, res, sql, [from, to, status, startDate])
         console.log("UpdateOperation 1 result");
         console.log(checkUOperationResult);
         return checkUOperationResult;
@@ -1025,7 +748,6 @@ async function selectOperation(operationId) {
     console.log("selectOperation *************** ");
     console.log(operationId);
 
-    // var useIdstring = useId.toString()
     try {
         console.log("selectOperation");
 
@@ -1051,7 +773,55 @@ async function selectOperation(operationId) {
 
     }
 }
+
+
+
+
+async function selectAllUserLogs(userId) {
+    let req, res;
+    console.log("selectAllUserLogs1 ");
+    console.log(userId);
+
+    try {
+
+        var sqlAllUserLogs = ` SELECT * FROM connectios_users c, logs_history logs  WHERE  c.user_mobile= ?  AND (c.id = logs.user_id   or c.id = logs.to_id)`;
+        let alUserLogsResult = await businesspool(req, res, sqlAllUserLogs, [userId])
+
+        console.log("selectAllUserLogs22 ");
+
+        if (alUserLogsResult.rows.length != 0) {
+
+            console.log("selectAllUserLogs");
+            console.log(alUserLogsResult.rows);
+
+        } else {
+
+            console.log("no  selectAllUserLogs ");
+        }
+
+        return alUserLogsResult;
+    }
+    catch (error) {
+        console.log("error 4");
+        console.log(error);
+
+    }
+}
+
+// selectAllUserLogs(0)
+
+// SELECT *
+// FROM connectios_users c, logs_history l
+// WHERE  c.user_mobile= 0
+// AND (c.id = l.user_id 
+// or c.id = l.to_id)
+
+
+
 //listen to port 3000 on pc
 // server.listen(3002)
+
+// getUserDataAndSort()
+
 server.listen(process.env.PORT || 3004)
 
