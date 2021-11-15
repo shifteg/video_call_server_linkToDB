@@ -1,29 +1,19 @@
-//requires express module
-
 const express = require('express');
 const app = express();
 //requires  httpmodule
-
 const http = require('http')
 const businesspool = require('./businessPool')
-
 const setUserData = require('./setUsersdData')
 // var PORT = process.env.PORT || 3001;
 // create server
-
 const server = http.createServer(app);
 // const io = require('socket.io')(server);
 const io = require('socket.io')(server, { origins: '*:*' });
 //show static files in 'public' directory
-
 const fs = require('fs');
-
 //tells to host server on localhost:3000
 app.set('views', 'Views');
-
 app.use(express.static('Views'));
-
-
 //Playing variables:
 app.use(express.static('public'));
 // app.use(express.bodyParser());
@@ -31,7 +21,6 @@ app.use(express.static('public'));
 console.log('Server is running');
 const dns = require('dns');
 const publicIp = require('public-ip');
-
 var mysql = require('mysql');
 // var connectionDB = mysql.createConnection({
 //     host: 'sql11.freemysqlhosting.net',
@@ -40,13 +29,6 @@ var mysql = require('mysql');
 //     database: 'sql11448702'
 
 // });
-
-// calldb
-// call
-//0123456789Db!@|#
-// pluW4vhvjniR9duz
-// connection.connect();
-
 
 // connectionDB.connect(function (err) {
 //     if (err) {
@@ -64,7 +46,6 @@ dns.lookup('www.google.com',
         // Print the family found of user  
         console.log('family:', family);
     });
-
 
 app.get('/', (req, res) => {
     return res.render('index.html')
@@ -90,33 +71,33 @@ app.get('/notconnect', async function (req, res) {
                 console.log('notconnect if :');
 
                 await updatetUserConnected(req.query.id, 1)
-                return res.send("user connected ");
+                return res.status(200).send("user connected ");
 
             } else if (req.query.connect_status === "false") {
                 console.log('notconnect else  if :');
 
                 await updatetUserConnected(req.query.id, 0)
-                return res.send("user not connected ");
+                return res.status(200).send("user not connected ");
 
             }
             else {
                 console.log('notconnect else :');
-                return res.send(" connect_status error");
+                return res.status(200).send(" connect_status error");
             }
 
 
         } else {
-            return res.send("user not join app");
+            return res.status(200).send("user not join app");
 
         }
 
 
     } else {
-        return res.send("data is null");
+        return res.status(200).send("data is null");
 
     }
 
-    res.send("Welcome to Homepage");
+    // res.send("Welcome to Homepage");
 });
 
 app.get('/logs', async function (req, res) {
@@ -129,47 +110,26 @@ app.get('/logs', async function (req, res) {
 
         console.log('logs2 selectUserLogs');
 
-        console.log(selectUserLogs);
+        console.log(selectUserLogs.page_number);
+        console.log(selectUserLogs.logs.rows.length );
 
-        if (selectUserLogs.rows.length != 0) {
-            return res.send(selectUserLogs);
+        if (selectUserLogs.logs.rows.length != 0) {
+
+            return res.status(200).send(selectUserLogs);
         } else {
-            return res.send("no logs");
+            return res.status(200).send("no logs");
         }
     } else {
-        return res.send("data is null");
-
+        return res.status(200).send("data is null");
     }
-
-    res.send("Welcome to Homepage");
+    // res.send("Welcome to Homepage");
 });
 
-
-
-// var dict = {};
-
-// var myMap = new Map();
 
 var ip = require("ip");
 const { resolve } = require('path');
 const { rejects } = require('assert');
 console.dir("server id ip for test : " + ip.address());
-// console.dir("server id ip for test : " + ip.PORT);
-// console.dir("server id ip for test : " + ip.env);
-// app.listen(3000)
-//Socket.io Connection------------------
-// io.engine.generateId = function (req) {
-//     // generate a new custom id here
-//     return 1
-// }
-
-// const statusMonitor = require('express-status-monitor');
-// app.use(statusMonitor());
-
-
-// for(var i=0;  i<=2;   i++){ }
-
-//   var  socket= io( "?id="+i+"&name="+i+"&image="+i+"")
 
 io.on('connection', async socket => {
 
@@ -774,14 +734,11 @@ async function selectOperation(operationId) {
     }
 }
 
-
-
-
 async function selectAllUserLogs(userId) {
     let req, res;
     console.log("selectAllUserLogs1 ");
     console.log(userId);
-
+    let numberOfPage;
     try {
 
         var sqlAllUserLogs = ` SELECT * FROM connectios_users c, logs_history logs  WHERE  c.user_mobile= ?  AND (c.id = logs.user_id   or c.id = logs.to_id)`;
@@ -791,15 +748,21 @@ async function selectAllUserLogs(userId) {
 
         if (alUserLogsResult.rows.length != 0) {
 
-            console.log("selectAllUserLogs");
-            console.log(alUserLogsResult.rows);
+            let lenght = alUserLogsResult.rows.length
+            // console.log(alUserLogsResult.rows);
+            console.log("lenght");
+            console.log(lenght);
+
+              numberOfPage=Math.round(lenght/5)
+            console.log(numberOfPage);
+
 
         } else {
 
             console.log("no  selectAllUserLogs ");
         }
 
-        return alUserLogsResult;
+        return {"logs":alUserLogsResult , "page_number":numberOfPage};
     }
     catch (error) {
         console.log("error 4");
@@ -808,20 +771,15 @@ async function selectAllUserLogs(userId) {
     }
 }
 
-// selectAllUserLogs(0)
-
 // SELECT *
 // FROM connectios_users c, logs_history l
 // WHERE  c.user_mobile= 0
 // AND (c.id = l.user_id 
 // or c.id = l.to_id)
 
-
-
 //listen to port 3000 on pc
-// server.listen(3002)
 
-// getUserDataAndSort()
+// server.listen(3002)
 
 server.listen(process.env.PORT || 3004)
 

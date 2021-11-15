@@ -1,0 +1,64 @@
+SELECT c.id,
+case 
+when c.id = l.user_id THEN
+(select user_mobile from connectios_users cu where cu.id = l.to_id ) 
+
+end to_user_mobile,
+case
+when c.id = l.to_id THEN
+(select user_mobile from connectios_users cu where cu.id = l.user_id ) 
+
+end from_user_mobile
+
+FROM connectios_users c, logs_history l
+
+WHERE  c.user_mobile= 0
+AND (c.id = l.user_id 
+or c.id = l.to_id)
+
+
+-- INNER JOIN logs_history ON   c.id = logs_history.to_id
+
+
+
+<--------------------------------------------------------------------------------->
+SELECT c.id, c.user_name, c.user_mobile,
+case 
+when c.id = l.user_id THEN
+(select user_mobile from connectios_users cu   where cu.id = l.to_id )
+end to_user_mobile,
+
+case 
+when c.id = l.user_id THEN
+(select user_name from connectios_users cu   where cu.id = l.to_id )
+end to_user_name,
+
+case
+when c.id = l.to_id THEN
+(select user_mobile  from connectios_users cu where cu.id = l.user_id ) 
+end from_user_mobile,
+
+case
+when c.id = l.to_id THEN
+(select user_name  from connectios_users cu where cu.id = l.user_id ) 
+end from_user_name
+
+case
+when c.id = l.to_id THEN
+(select user_name  from connectios_users cu where cu.id = l.user_id ) 
+end from_user_name
+
+FROM connectios_users c, logs_history l
+WHERE  c.user_mobile= 0
+AND (c.id = l.user_id 
+or c.id = l.to_id)
+
+-- INNER JOIN logs_history ON   c.id = logs_history.to_id
+ <---------------------------------------------------------------------------->
+SELECT *
+FROM connectios_users c, logs_history l
+WHERE  c.user_mobile= 0
+AND (c.id = l.user_id 
+or c.id = l.to_id)
+
+ 
