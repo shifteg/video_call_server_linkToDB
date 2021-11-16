@@ -111,9 +111,9 @@ app.get('/logs', async function (req, res) {
         console.log('logs2 selectUserLogs');
 
         console.log(selectUserLogs.page_number);
-        console.log(selectUserLogs.logs.rows.length );
+        console.log(selectUserLogs.logs.length );
 
-        if (selectUserLogs.logs.rows.length != 0) {
+        if (selectUserLogs.logs.length != 0) {
 
             return res.status(200).send(selectUserLogs);
         } else {
@@ -741,7 +741,14 @@ async function selectAllUserLogs(userId) {
     let numberOfPage;
     try {
 
-        var sqlAllUserLogs = ` SELECT * FROM connectios_users c, logs_history logs  WHERE  c.user_mobile= ?  AND (c.id = logs.user_id   or c.id = logs.to_id)`;
+        // select * from logs
+        // where user_mobile_sender = 0
+        // or user_mobile_receiver = 0
+
+        var sqlAllUserLogs = `select * from logs where user_mobile_sender = 0 or user_mobile_receiver = 0`;
+
+
+        // var sqlAllUserLogs = ` SELECT * FROM connectios_users c, logs_history logs  WHERE  c.user_mobile= ?  AND (c.id = logs.user_id   or c.id = logs.to_id)`;
         let alUserLogsResult = await businesspool(req, res, sqlAllUserLogs, [userId])
 
         console.log("selectAllUserLogs22 ");
@@ -762,7 +769,7 @@ async function selectAllUserLogs(userId) {
             console.log("no  selectAllUserLogs ");
         }
 
-        return {"logs":alUserLogsResult , "page_number":numberOfPage};
+        return {"logs":alUserLogsResult.rows , "page_number":numberOfPage};
     }
     catch (error) {
         console.log("error 4");
