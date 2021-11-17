@@ -745,11 +745,11 @@ async function selectAllUserLogs(userId) {
         // where user_mobile_sender = 0
         // or user_mobile_receiver = 0
 
-        var sqlAllUserLogs = `select * from logs where user_mobile_sender = 0 or user_mobile_receiver = 0`;
+        var sqlAllUserLogs = `select * from logs where user_mobile_sender = ? or user_mobile_receiver = ?`;
 
 
         // var sqlAllUserLogs = ` SELECT * FROM connectios_users c, logs_history logs  WHERE  c.user_mobile= ?  AND (c.id = logs.user_id   or c.id = logs.to_id)`;
-        let alUserLogsResult = await businesspool(req, res, sqlAllUserLogs, [userId])
+        let alUserLogsResult = await businesspool(req, res, sqlAllUserLogs, [userId,userId])
 
         console.log("selectAllUserLogs22 ");
 
