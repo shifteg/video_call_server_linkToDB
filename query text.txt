@@ -82,4 +82,27 @@ left join `connectios_users` `c` on
     ((`l`.`user_id` = `c`.`id`)))
 left join `connectios_users` `u` on
     ((`l`.`to_id` = `u`.`id`)))
+
+
+<--------------------------------------------------------------->
+
+CREATE OR REPLACE
+ALGORITHM = UNDEFINED VIEW `logs` AS
+select
+    `c`.`id` AS `sender_id`,
+    `c`.`user_mobile` AS `user_mobile_sender`,
+    `c`.`user_name` AS `user_name_sender`,
+    `c`.`status` AS `sender_status`,
+    `c`.`user_image_url` AS `sender_img`,
+    `u`.`id` AS `receiver_id`,
+    `u`.`user_mobile` AS `user_mobile_receiver`,
+    `u`.`user_name` AS `user_name_receiver`,
+    `u`.`status` AS `receiver_status`,
+    `u`.`user_image_url` AS `reeciver_img`
+from
+    ((`logs_history` `l`
+left join `connectios_users` `c` on
+    ((`l`.`user_id` = `c`.`id`)))
+left join `connectios_users` `u` on
+    ((`l`.`to_id` = `u`.`id`)))
  
