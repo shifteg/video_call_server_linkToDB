@@ -4,7 +4,7 @@ var answer
 exports.getUserData = (caller, answer, usersData) => {
     // console.log("getUserData******************************************")
     console.log(usersData)
-    caller = usersData.rows[0]
+    // caller = usersData.rows[0]
     console.log("calller***************************")
     console.log(caller)
 

@@ -110,8 +110,8 @@ app.get('/logs', async function (req, res) {
 
         console.log('logs2 selectUserLogs');
 
-        console.log(selectUserLogs.page_number);
-        console.log(selectUserLogs.logs.length );
+        // console.log(selectUserLogs.page_number);
+        // console.log(selectUserLogs.logs.length );
 
         if (selectUserLogs.logs.length != 0) {
 
@@ -186,33 +186,44 @@ io.on('connection', async socket => {
             console.log(message)
             let messageCallerId = message.me_id
             let messageAnswerId = message.friendId
+            console.log("send-call1.1");
+            console.log(messageCallerId)
+            console.log(messageAnswerId)
+
             const d = new Date();
             var startDate = d
             console.log(startDate);
+
             let usersSortDataSendCall = await getUserDataAndSort(messageCallerId, messageAnswerId)
             var callerData = usersSortDataSendCall._caller;
             var answerData = usersSortDataSendCall._answer;
 
             console.log("send-call2 ");
             console.log(answerData.id);
+            console.log(callerData.id);
 
             if (answerData.id != null) {
 
                 try {
                     console.log("send-call3");
-                    console.log(answerData);
-                    console.log(answerData.socket_id);
+                    // console.log(answerData);
+                    // console.log(answerData.socket_id);
                     console.log("send-call4 try ")
 
-                    console.log(answerData.connected)
-                    console.log(answerData.status)
+                    // console.log(answerData.connected)
+                    // console.log(answerData.status)
 
                     if (answerData.connected == 1) {
+
                         if (answerData.status == 1) {
-                            console.log(answerData)
+
+                            // console.log(answerData)
                             console.log("send-call5 friendConnected if ==1");
+                          
                             var operationId = await insertOperation(callerData.id, answerData.id, 4, startDate)
+                          
                             await updatetUserStatus(callerData.id, 0)
+                          
                             io.to(answerData.socket_id).emit('send-call', { "message": callerData.user_mobile, "username": callerData.user_name, "user-image": callerData.user_image_url, "operation_id": operationId.rows.insertId })
 
                         } else {
@@ -380,6 +391,9 @@ io.on('connection', async socket => {
             let usersSortDataEnd = await getUserDataAndSort(endCallerId, endAnswerId)
             let callerData = usersSortDataEnd._caller;
             let answerData = usersSortDataEnd._answer;
+          
+            console.log("end callerData1");
+            console.log(callerData);
 
             /******************************************************************************************************************************* */
             let eventType = end.event_type
@@ -741,23 +755,21 @@ async function selectAllUserLogs(userId) {
     let numberOfPage;
     try {
 
-        // select * from logs
-        // where user_mobile_sender = 0
-        // or user_mobile_receiver = 0
+        
+        // var sqlAllUserLogs = `select *,DATE_FORMAT(start_date, '%r')  AS start_date_formated
+        // ,DATE_FORMAT(end_date, '%r')  AS end_date_formated
+        
+        // from logs where user_mobile_sender = ? or user_mobile_receiver = ?`;
+        var sqlAllUserLogs = `select *  from logs where user_mobile_sender = ? or user_mobile_receiver = ?`;
 
-        var sqlAllUserLogs = `select * from logs where user_mobile_sender = ? or user_mobile_receiver = ?`;
-
-
-        // var sqlAllUserLogs = ` SELECT * FROM connectios_users c, logs_history logs  WHERE  c.user_mobile= ?  AND (c.id = logs.user_id   or c.id = logs.to_id)`;
         let alUserLogsResult = await businesspool(req, res, sqlAllUserLogs, [userId,userId])
 
-        console.log("selectAllUserLogs22 ");
+        console.log("selectAllUserLogs2  ");
 
         if (alUserLogsResult.rows.length != 0) {
 
             let lenght = alUserLogsResult.rows.length
-            // console.log(alUserLogsResult.rows);
-            console.log("lenght");
+             console.log("lenght");
             console.log(lenght);
 
               numberOfPage=Math.round(lenght/5)
@@ -768,6 +780,7 @@ async function selectAllUserLogs(userId) {
 
             console.log("no  selectAllUserLogs ");
         }
+        // return {"logs":alUserLogsResult.rows , "page_number":numberOfPage};
 
         return {"logs":alUserLogsResult.rows , "page_number":numberOfPage};
     }
